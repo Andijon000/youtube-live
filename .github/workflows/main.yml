@@ -1,24 +1,28 @@
-name: YouTube Live Stream
+name: YouTube Live Stream from Drive
 
 on:
-  workflow_dispatch: # Bu tugmani bosganda efir boshlanishi uchun
+  workflow_dispatch: # Bu tugmani qo'lda bosish uchun
 
 jobs:
   stream:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
     - name: Install FFmpeg
-      run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg
 
     - name: Start Streaming
       env:
         STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+        FILE_ID: "1s-LzbJNETUc7e82fREkkRCS03Gdpk1rc"
       run: |
-        ffmpeg -re -stream_loop -1 -i "video1.mp4" \
-        -c:v libx264 -preset veryfast -maxrate 3000k \
-        -bufsize 6000k -pix_fmt yuv420p -g 50 \
+        # Google Drive Direct Link yaratish
+        VIDEO_URL="https://docs.google.com/uc?export=download&id=$FILE_ID"
+        
+        # FFmpeg orqali YouTube-ga uzatish
+        ffmpeg -re -stream_loop -1 -i "$VIDEO_URL" \
+        -c:v libx264 -preset veryfast -b:v 2500k -maxrate 2500k \
+        -bufsize 5000k -pix_fmt yuv420p -g 50 \
         -c:a aac -b:a 128k -ar 44100 \
         -f flv rtmp://a.rtmp.youtube.com/live2/$STREAM_KEY
