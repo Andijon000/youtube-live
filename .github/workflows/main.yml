@@ -1,0 +1,24 @@
+name: YouTube Live Stream
+
+on:
+  workflow_dispatch: # Bu tugmani bosganda efir boshlanishi uchun
+
+jobs:
+  stream:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install FFmpeg
+      run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+    - name: Start Streaming
+      env:
+        STREAM_KEY: ${{ secrets.YOUTUBE_STREAM_KEY }}
+      run: |
+        ffmpeg -re -stream_loop -1 -i "video1.mp4" \
+        -c:v libx264 -preset veryfast -maxrate 3000k \
+        -bufsize 6000k -pix_fmt yuv420p -g 50 \
+        -c:a aac -b:a 128k -ar 44100 \
+        -f flv rtmp://a.rtmp.youtube.com/live2/$STREAM_KEY
